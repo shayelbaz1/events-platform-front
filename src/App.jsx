@@ -4,7 +4,7 @@ import EventDetail from './pages/EventDetail';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/events-platform-front">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/event/:id" element={<EventDetail />} />
