@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import Header from '../components/Header';
 import ChannelHeader from '../components/ChannelHeader';
 import FilterBar from '../components/FilterBar';
@@ -5,66 +6,130 @@ import EventSection from '../components/EventSection';
 import { eventsData } from '../data/eventsData';
 
 const HomePage = () => {
+  const [filters, setFilters] = useState({
+    time: 'Today',
+    categories: [],
+    prices: []
+  });
+
+  // Filter events based on selected filters
+  const filterEvents = (events) => {
+    return events.filter(event => {
+      // Filter by categories
+      if (filters.categories.length > 0 && !filters.categories.includes(event.category)) {
+        return false;
+      }
+
+      // Filter by price
+      if (filters.prices.length > 0 && !filters.prices.includes(event.priceType)) {
+        return false;
+      }
+
+      return true;
+    });
+  };
+
+  // Prepare filtered data
+  const filteredData = useMemo(() => {
+    return {
+      topPicks: filterEvents(eventsData.topPicks),
+      upNext: filterEvents(eventsData.upNext),
+      morningVibes: filterEvents(eventsData.morningVibes),
+      noonAndChill: filterEvents(eventsData.noonAndChill),
+      afternoonGroove: filterEvents(eventsData.afternoonGroove),
+      sunsetMoments: filterEvents(eventsData.sunsetMoments),
+      eveningEnergy: filterEvents(eventsData.eveningEnergy),
+      nightlifeHighlights: filterEvents(eventsData.nightlifeHighlights)
+    };
+  }, [filters]);
+
+  // Calculate cumulative index for proper navigation
+  const getCumulativeIndex = (sectionKey) => {
+    const sections = ['topPicks', 'upNext', 'morningVibes', 'noonAndChill', 'afternoonGroove', 'sunsetMoments', 'eveningEnergy'];
+    let index = 0;
+    for (let section of sections) {
+      if (section === sectionKey) break;
+      index += filteredData[section].length;
+    }
+    return index;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <ChannelHeader />
-      <FilterBar />
+      <FilterBar filters={filters} onFilterChange={setFilters} />
       
       <div className="bg-gray-50">
-        <EventSection 
-          title="Today's Top Picks!" 
-          events={eventsData.topPicks}
-          startIndex={0}
-        />
+        {filteredData.topPicks.length > 0 && (
+          <EventSection 
+            title="Today's Top Picks!" 
+            events={filteredData.topPicks}
+            startIndex={0}
+          />
+        )}
         
-        <EventSection 
-          title="Up Next!" 
-          events={eventsData.upNext}
-          startIndex={eventsData.topPicks.length}
-        />
+        {filteredData.upNext.length > 0 && (
+          <EventSection 
+            title="Up Next!" 
+            events={filteredData.upNext}
+            startIndex={getCumulativeIndex('upNext')}
+          />
+        )}
         
-        <EventSection 
-          title="Morning Vibes" 
-          emoji="☕️" 
-          events={eventsData.morningVibes}
-          startIndex={eventsData.topPicks.length + eventsData.upNext.length}
-        />
+        {filteredData.morningVibes.length > 0 && (
+          <EventSection 
+            title="Morning Vibes" 
+            emoji="☕️" 
+            events={filteredData.morningVibes}
+            startIndex={getCumulativeIndex('morningVibes')}
+          />
+        )}
         
-        <EventSection 
-          title="Noon & Chill" 
-          emoji="😎" 
-          events={eventsData.noonAndChill}
-          startIndex={eventsData.topPicks.length + eventsData.upNext.length + eventsData.morningVibes.length}
-        />
+        {filteredData.noonAndChill.length > 0 && (
+          <EventSection 
+            title="Noon & Chill" 
+            emoji="😎" 
+            events={filteredData.noonAndChill}
+            startIndex={getCumulativeIndex('noonAndChill')}
+          />
+        )}
         
-        <EventSection 
-          title="Afternoon Groove" 
-          emoji="⚡" 
-          events={eventsData.afternoonGroove}
-          startIndex={eventsData.topPicks.length + eventsData.upNext.length + eventsData.morningVibes.length + eventsData.noonAndChill.length}
-        />
+        {filteredData.afternoonGroove.length > 0 && (
+          <EventSection 
+            title="Afternoon Groove" 
+            emoji="⚡" 
+            events={filteredData.afternoonGroove}
+            startIndex={getCumulativeIndex('afternoonGroove')}
+          />
+        )}
         
-        <EventSection 
-          title="Sunset Moments" 
-          emoji="🌅" 
-          events={eventsData.sunsetMoments}
-          startIndex={eventsData.topPicks.length + eventsData.upNext.length + eventsData.morningVibes.length + eventsData.noonAndChill.length + eventsData.afternoonGroove.length}
-        />
+        {filteredData.sunsetMoments.length > 0 && (
+          <EventSection 
+            title="Sunset Moments" 
+            emoji="🌅" 
+            events={filteredData.sunsetMoments}
+            startIndex={getCumulativeIndex('sunsetMoments')}
+          />
+        )}
         
-        <EventSection 
-          title="Evening Energy" 
-          emoji="🔥" 
-          events={eventsData.eveningEnergy}
-          startIndex={eventsData.topPicks.length + eventsData.upNext.length + eventsData.morningVibes.length + eventsData.noonAndChill.length + eventsData.afternoonGroove.length + eventsData.sunsetMoments.length}
-        />
+        {filteredData.eveningEnergy.length > 0 && (
+          <EventSection 
+            title="Evening Energy" 
+            emoji="🔥" 
+            events={filteredData.eveningEnergy}
+            startIndex={getCumulativeIndex('eveningEnergy')}
+          />
+        )}
         
-        <EventSection 
-          title="Nightlife Highlights" 
-          emoji="🏙️" 
-          events={eventsData.nightlifeHighlights}
-          startIndex={eventsData.topPicks.length + eventsData.upNext.length + eventsData.morningVibes.length + eventsData.noonAndChill.length + eventsData.afternoonGroove.length + eventsData.sunsetMoments.length + eventsData.eveningEnergy.length}
-        />
+        {filteredData.nightlifeHighlights.length > 0 && (
+          <EventSection 
+            title="Nightlife Highlights" 
+            emoji="🏙️" 
+            events={filteredData.nightlifeHighlights}
+            startIndex={getCumulativeIndex('nightlifeHighlights')}
+          />
+        )}
         
         {/* Tomorrow Section */}
         <div className="py-8 px-6 border-t-4 border-gray-300">
